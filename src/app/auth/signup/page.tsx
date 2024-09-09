@@ -54,13 +54,13 @@ const SignUp: React.FC = () => {
     <div className="flex flex-wrap items-center h-svh">
       <div className="hidden w-full md:block md:w-1/2">
         <div className="h-svh">
-          <Link href="/">
+          <Link href="/" className="flex justify-center">
             <Image
-              className="dark:block !h-svh object-cover"
+              className="dark:block !h-svh object-contain"
               src={"/images/banner.jpg"}
               alt="Logo"
-              width={800}
-              height={800}
+              width={500}
+              height={500}
             />
           </Link>
         </div>
@@ -68,12 +68,12 @@ const SignUp: React.FC = () => {
 
       <div className="w-full border-stroke dark:border-strokedark xl:w-1/2">
         <div className="w-full p-4 sm:p-12.5">
-          <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
+          <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2 text-center">
             Registro de afiliados
           </h2>
 
           {error && <p className="text-red-500">{error}</p>}
-          {success && <p className="text-green-500">¡Registro exitoso!</p>}
+          {success && <p className="text-green-500 text-center">¡Registro exitoso!</p>}
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
@@ -85,7 +85,7 @@ const SignUp: React.FC = () => {
                   type="text"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Enter your full name"
+                  placeholder="Ingresa tu nombre"
                   className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
@@ -93,14 +93,14 @@ const SignUp: React.FC = () => {
 
             <div className="mb-4">
               <label className="mb-2.5 block font-medium text-black dark:text-white">
-                Correo
+                Correo electrónico
               </label>
               <div className="relative">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="Ingresa tu correo electrónico"
                   className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
@@ -115,7 +115,7 @@ const SignUp: React.FC = () => {
                   type="tel"
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
-                  placeholder="Enter your phone number"
+                  placeholder="Ingresa tu teléfono"
                   className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
@@ -133,7 +133,7 @@ const SignUp: React.FC = () => {
               <p>
                 ¿Ya estás registrado?{" "}
                 <Link href="/auth/signin" className="text-primary">
-                  Iniciar Sesión
+                  Iniciar sesión
                 </Link>
               </p>
             </div>
@@ -141,6 +141,7 @@ const SignUp: React.FC = () => {
         </div>
       </div>
     </div>
+
   );
 };
 

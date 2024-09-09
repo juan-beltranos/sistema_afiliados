@@ -1,10 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { db } from '@/app/lib/firebase'; // Ajusta la ruta según la ubicación de tu archivo
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { log } from "console";
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -34,39 +33,50 @@ const SignIn: React.FC = () => {
     }
   };
 
+  const validateSesion = () => {
+    if (localStorage.getItem('afiliado')) {
+      window.location.href = `/dashboard/ebooks/?afiliado=${localStorage.getItem('afiliado')}`;
+    }
+  }
+
+  useEffect(() => {
+    validateSesion()
+  }, [])
+
+
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
       <div className="flex flex-wrap items-center h-svh">
 
         <div className="hidden w-full md:block md:w-1/2">
           <div className="h-svh">
-            <Link className="" href="/">
+            <Link className="flex justify-center" href="/">
               <Image
-                className="dark:block !h-svh object-cover"
+                className="dark:block !h-svh object-contain"
                 src={"/images/banner.jpg"}
                 alt="Logo"
-                width={800}
-                height={800}
+                width={500}
+                height={500}
               />
             </Link>
           </div>
         </div>
 
-        <div className="w-full border-stroke dark:border-strokedark md:w-1/2 ">
+        <div className="w-full border-stroke dark:border-strokedark md:w-1/2">
           <div className="w-full p-4 sm:p-12.5 xl:p-17">
-            <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
-              Sign In
+            <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2 text-center">
+              Iniciar sesión
             </h2>
 
             <form onSubmit={handleSignIn}>
               <div className="mb-4">
                 <label className="mb-2.5 block font-medium text-black dark:text-white">
-                  Correo
+                  Correo electrónico
                 </label>
                 <div className="relative">
                   <input
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Ingresa tu correo electrónico"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -80,8 +90,8 @@ const SignIn: React.FC = () => {
                 </label>
                 <div className="relative">
                   <input
-                    type="password"
-                    placeholder="Enter your phone number"
+                    type="tel"
+                    placeholder="Ingresa tu teléfono"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -100,7 +110,7 @@ const SignIn: React.FC = () => {
               </div>
 
               <div className="mt-5 text-center text-base font-medium text-black dark:text-white">
-                No te has registrado?
+                ¿No te has registrado?
                 <Link
                   href="/auth/signup"
                   className="ml-2.5 text-primary transition hover:underline dark:text-primarylight"
@@ -113,6 +123,7 @@ const SignIn: React.FC = () => {
         </div>
       </div>
     </div>
+
   );
 };
 

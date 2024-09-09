@@ -38,7 +38,7 @@ const FormLayout: React.FC = () => {
           id: doc.id,
           cantidad: doc.data().cantidad,
           comisión: doc.data().comisión,
-          fecha: doc.data().fecha.toDate(), 
+          fecha: doc.data().fecha.toDate(),
           urlProducto: doc.data().urlProducto,
           valorVenta: doc.data().valorVenta,
         }));
@@ -52,7 +52,18 @@ const FormLayout: React.FC = () => {
     };
 
     fetchVentas();
-  }, []); 
+  }, []);
+  
+  const logout = () => {
+    if (!localStorage.getItem('afiliado') || localStorage.getItem('afiliado') === '') {
+      window.location.href = '/auth/signin'
+    }
+  };
+
+  useEffect(() => {
+    logout()
+  }, [])
+
 
   if (loading) {
     return <p>Cargando ventas...</p>;
@@ -63,42 +74,39 @@ const FormLayout: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6">
-      <div className="flex flex-col gap-6">
-        <div className="rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-         
-          <div className="">
-            {ventas.map((venta) => (
-              <div key={venta.id} className="rounded-sm border border-stroke bg-white shadow-default p-4 dark:border-strokedark dark:bg-boxdark">
-                <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <strong>ID Venta:</strong> {venta.id}
-                </p>
-                <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <strong>Cantidad:</strong> {venta.cantidad}
-                </p>
-                <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <strong>Comisión:</strong> {venta.comisión}
-                </p>
-                <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <strong>Fecha:</strong> {venta.fecha.toLocaleDateString()}
-                </p>
-                <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <strong>URL Producto: </strong>
-                  <a href={venta.urlProducto} target="_blank" rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline break-all">
-                    {venta.urlProducto}
-                  </a>
-                </p>
-                <p className="text-lg font-medium text-gray-700 dark:text-gray-200">
-                  <strong>Valor Venta:</strong> {venta.valorVenta}
-                </p>
-              </div>
-            ))}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+      {ventas.map((venta) => (
+        <div key={venta.id} className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 p-6">
+          <div className="mb-4">
+            <p className="text-lg font-bold text-black mb-2 dark:text-black">
+              <strong>ID Venta:</strong> {venta.id}
+            </p>
+            <p className="text-lg text-gray-700 dark:text-black mb-2">
+              <strong>Cantidad:</strong> {venta.cantidad}
+            </p>
+            <p className="text-lg text-gray-700 dark:text-black mb-2">
+              <strong>Comisión:</strong> ${venta.comisión}
+            </p>
+            <p className="text-lg text-gray-700 dark:text-black mb-2">
+              <strong>Fecha:</strong> {venta.fecha.toLocaleDateString()}
+            </p>
+            <p className="text-lg text-gray-700 dark:text-black mb-2 break-all">
+              <strong>URL Producto:</strong>
+              <a
+                href={venta.urlProducto}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline">
+                {venta.urlProducto}
+              </a>
+            </p>
+            <p className="text-lg text-gray-700 dark:text-black">
+              <strong>Valor Venta:</strong> ${venta.valorVenta}
+            </p>
           </div>
         </div>
-      </div>
+      ))}
     </div>
-
   );
 };
 

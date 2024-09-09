@@ -55,6 +55,17 @@ const FormLayout = () => {
     fetchVentas();
   }, []);
 
+  const logout = () => {
+    if (!localStorage.getItem('afiliado') || localStorage.getItem('afiliado') === '') {
+      window.location.href = '/auth/signin'
+    }
+  };
+
+  useEffect(() => {
+    logout()
+  }, [])
+
+
   return (
     <div className="grid grid-cols-1 gap-9 p-4">
       <div className="flex flex-col gap-9">
