@@ -1,0 +1,42 @@
+{
+    "banner": "https://audifonosair31.stocky.com.co/dist/images/auriculares-bluetooth-air31.png",
+    "comision": "15000",
+    "decripcionPrincipal": "Táctil: Controla la música con un toque. Carga rápida: USB-C para cargar rápidamente. Cancelación de ruido: Cancelación de ruido activa con Bluetooth 5.0.",
+    "descripcionGarantia": "Garantía completa de 30 días para devoluciones.",
+    "descripcionSecundaria": "",
+    "imagen": "https://audifonosair31.stocky.com.co/dist/images/auriculares-bluetooth-air31.png",
+    "nombre": "Auriculares Inalámbricos Air31",
+    "plataforma": "dropi",
+    "precio": 60000,
+    "reel": "https://audifonosair31.stocky.com.co/dist/images/6.png",
+    "textoSelecciona": "Selecciona tus colores favoritos",
+    "tituloDescripcion": "Incluye diversas funcionalidades",
+    "tituloGarantia": "30 DÍAS DE GARANTÍA",
+    "url": "http://stockyproducto.stocky.com.co/",
+    "preguntasFrecuentes": [
+        {
+            "titulo": "¿Cuál es la duración de la batería?",
+            "descripcion": "La duración de la batería es de hasta 8 horas."
+        },
+        {
+            "titulo": "¿Se pueden usar para hacer deporte?",
+            "descripcion": "Sí, son resistentes al agua y al sudor."
+        }
+    ],
+    "textoBotones": [
+        "comprar ahora",
+        "comprar contraentrega"
+    ],
+    "variantes": [
+        {
+            "color": "blanco",
+            "id": "474563",
+            "img": "https://audifonosair31.stocky.com.co/dist/images/1.png"
+        },
+        {
+            "color": "rosado",
+            "id": "1822837",
+            "img": "https://audifonosair31.stocky.com.co/dist/images/2.png"
+        }
+    ]
+}
