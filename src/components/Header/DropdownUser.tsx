@@ -4,23 +4,41 @@ import Image from "next/image";
 import ClickOutside from "@/components/ClickOutside";
 
 import { db } from "@/app/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
+
+interface Afiliado {
+  nombre: string;
+  telefono: string;
+}
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [afiliado, setAfiliado] = useState({ nombre: '', telefono: '' });
+  const [afiliado, setAfiliado] = useState<Afiliado | null>(null);
 
   useEffect(() => {
     const fetchAfiliado = async () => {
       try {
-        const afiliadosCollection = collection(db, 'afiliados');
-        const afiliadosSnapshot = await getDocs(afiliadosCollection);
-        const afiliadoDoc = afiliadosSnapshot.docs[0]?.data();
-        if (afiliadoDoc) {
+        const afiliadoId = localStorage.getItem('afiliado');
+        if (!afiliadoId) {
+          console.error("No afiliado ID found in localStorage");
+          return;
+        }
+
+        // Obtén la referencia al documento con el ID del afiliado
+        const afiliadoRef = doc(db, 'afiliados', afiliadoId);
+
+        // Ejecuta la consulta para obtener el documento
+        const afiliadoSnapshot = await getDoc(afiliadoRef);
+
+        // Verifica si el documento existe
+        if (afiliadoSnapshot.exists()) {
+          const afiliadoData = afiliadoSnapshot.data() as Afiliado;
           setAfiliado({
-            nombre: afiliadoDoc.nombre || '',
-            telefono: afiliadoDoc.telefono || '',
+            nombre: afiliadoData.nombre || '',
+            telefono: afiliadoData.telefono || '',
           });
+        } else {
+          console.log('Afiliado not found');
         }
       } catch (error) {
         console.error("Error fetching afiliado:", error);
@@ -44,9 +62,9 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            {afiliado.nombre}
+            {afiliado?.nombre}
           </span>
-          <span className="block text-xs"> {afiliado.telefono}</span>
+          <span className="block text-xs"> {afiliado?.telefono}</span>
         </span>
 
         <span className="h-12 w-12 rounded-full">

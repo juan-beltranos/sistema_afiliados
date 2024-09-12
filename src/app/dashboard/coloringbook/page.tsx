@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const ColoringBookPage = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Productos" />
+      <Breadcrumb pageName="Referidos" />
       <FormLayout />
     </DefaultLayout>
   );

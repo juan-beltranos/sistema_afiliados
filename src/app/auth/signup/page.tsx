@@ -2,16 +2,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { db } from "@/app/lib/firebase"; // Importa la configuración de Firebase
+import { db } from "@/app/lib/firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { v4 as uuidv4 } from 'uuid'; // Para generar un código de afiliado único
 
 const SignUp: React.FC = () => {
   // Estados para los campos del formulario
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
-  const [codigoAfiliado, setCodigoAfiliado] = useState(uuidv4()); // Generar código único
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
@@ -24,25 +22,31 @@ const SignUp: React.FC = () => {
       return;
     }
 
+    // Leer el parámetro 'AFL' de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const afiliadoReferente = urlParams.get('AFL') || '';
+
     try {
       // 1. Guardar en la colección "afiliados"
       const docRef = await addDoc(collection(db, "afiliados"), {
         nombre,
         email,
         telefono,
-        fechaRegistro: Timestamp.now(), // Fecha actual
-        codigoAfiliado, // Código único generado
-        ventasGeneradas: 0, // Valor inicial
-        comisionAcumulada: 0, // Valor inicial
-        estado: true, // Estado inicial
+        afiliadoReferente,
+        comisionAcumulada: 0,
+        comisionSubafiliados: 0,
+        ventasGeneradas: 0,
+        subAfiliados: [],
+        estado: true,
+        fechaRegistro: Timestamp.now(),
       });
 
-      // Limpiar el formulario
       setNombre("");
       setEmail("");
       setTelefono("");
-      setCodigoAfiliado(uuidv4()); // Generar nuevo código único para el siguiente registro
       setSuccess(true);
+
+      localStorage.setItem('afiliado', docRef.id);
       window.location.href = `/dashboard/ebooks/?afiliado=${docRef.id}`;
     } catch (error) {
       console.error("Error al registrar:", error);

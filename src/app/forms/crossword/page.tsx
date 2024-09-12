@@ -7,14 +7,14 @@ import { collection, getDocs, DocumentData } from "firebase/firestore";
 interface Venta {
   id: string;
   cantidad: number;
-  comisión: number;
+  comision: number;
   fecha: Date;
   urlProducto: string;
   valorVenta: number;
 }
 
 const FormLayout: React.FC = () => {
-  const [ventas, setVentas] = useState<Venta[]>([]); // Estado con el tipo correcto
+  const [ventas, setVentas] = useState<Venta[]>([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const FormLayout: React.FC = () => {
         const ventasList: Venta[] = ventasSnapshot.docs.map((doc: DocumentData) => ({
           id: doc.id,
           cantidad: doc.data().cantidad,
-          comisión: doc.data().comisión,
+          comision: doc.data().comisionAfiliado,
           fecha: doc.data().fecha.toDate(),
           urlProducto: doc.data().urlProducto,
           valorVenta: doc.data().valorVenta,
@@ -85,7 +85,7 @@ const FormLayout: React.FC = () => {
               <strong>Cantidad:</strong> {venta.cantidad}
             </p>
             <p className="text-lg text-gray-700 dark:text-black mb-2">
-              <strong>Comisión:</strong> ${venta.comisión}
+              <strong>Comisión:</strong> ${venta.comision}
             </p>
             <p className="text-lg text-gray-700 dark:text-black mb-2">
               <strong>Fecha:</strong> {venta.fecha.toLocaleDateString()}

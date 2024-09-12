@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { db } from "@/app/lib/firebase"; // Importa la configuración de Firebase
+import { db } from "@/app/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 interface Producto {
@@ -10,9 +10,10 @@ interface Producto {
   precio: number;
   imagen: string;
   comision: number;
+  id: string;
 }
 
-const copyToClipboard = (text: any) => {
+const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text).then(
     () => alert('Enlace copiado al portapapeles!'),
     (err) => console.error('Error al copiar al portapapeles: ', err)
@@ -41,44 +42,59 @@ const FormLayout = () => {
 
   const logout = () => {
     if (!localStorage.getItem('afiliado') || localStorage.getItem('afiliado') === '') {
-      window.location.href = '/auth/signin'
+      window.location.href = '/auth/signin';
     }
   };
 
   useEffect(() => {
-    logout()
-  }, [])
-  
+    logout();
+  }, []);
+
+  const generateProductUrl = (productId: string) => {
+    const baseUrl = 'http://stockyproducto.stocky.com.co';
+    const url = new URL(baseUrl);
+    url.searchParams.append('PRO', productId);
+    url.searchParams.append('AFL', localStorage.getItem('afiliado') || '');
+
+    return url.toString();
+  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
       {products.map((product) => (
-        <div key={product.url} className="bg-white dark:bg-boxdark shadow-lg rounded-lg overflow-hidden border border-gray-500 dark:border-strokedark">
+        <div key={product.url} className="bg-white shadow-lg rounded-lg overflow-hidden">
           <img
             src={product.imagen}
             alt={product.nombre}
             className="w-full h-48 object-contain"
           />
           <div className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
               {product.nombre}
             </h3>
-            <p className="text-gray-500 dark:text-gray-300 mb-4">
+            <p className="text-gray-500 mb-4">
               Precio: ${product.precio}
             </p>
-            <p className="text-gray-500 dark:text-gray-300 mb-4">
+            <p className="text-gray-500 mb-4">
               Comisión: ${product.comision}
             </p>
+            <div className="flex items-center mb-4">
+              <p className="text-gray-900 font-bold text-xl">
+                ${product.precio}
+              </p>
+            </div>
+
             <div className="flex items-center space-x-4">
               <a
-                href={`${product.url}?afiliado=${localStorage.getItem('afiliado')}`}
+                href={generateProductUrl(product.id)}
                 className="text-blue-500 hover:underline"
                 target="_blank"
-                rel="noopener noreferrer">
+                rel="noopener noreferrer"
+              >
                 {product.url}
               </a>
               <button
-                onClick={() => copyToClipboard(`${product.url}?afiliado=${localStorage.getItem('afiliado')}`)}
+                onClick={() => copyToClipboard(generateProductUrl(product.id))}
                 className="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100">
                 <svg
                   className="fill-current"
@@ -91,11 +107,20 @@ const FormLayout = () => {
                 </svg>
               </button>
             </div>
+            <button
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-2 px-4 rounded-lg mt-5">
+              <a
+                href={generateProductUrl(product.id)}
+                className="hover:underline text-white"
+                target="_blank"
+                rel="noopener noreferrer">
+                Ver Producto
+              </a>
+            </button>
           </div>
         </div>
       ))}
     </div>
-
   );
 };
 
