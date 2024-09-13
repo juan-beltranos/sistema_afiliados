@@ -1,22 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { db } from "@/app/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import axios from "axios";
 
 interface Producto {
-  url: string;
-  nombre: string;
-  precio: number;
-  imagen: string;
-  comision: number;
   id: string;
+  name: string;
+  price: number;
+  imageUrl: string;
+  short_description: string;
 }
 
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text).then(
-    () => alert('Enlace copiado al portapapeles!'),
-    (err) => console.error('Error al copiar al portapapeles: ', err)
+    () => alert("Enlace copiado al portapapeles!"),
+    (err) => console.error("Error al copiar al portapapeles: ", err)
   );
 };
 
@@ -26,11 +24,27 @@ const FormLayout = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "productos"));
-        const productsData: Producto[] = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data() as Omit<Producto, 'id'>
+        const response = await axios.get(
+          "https://ms-public-api.rocketfy.com/rocketfy/api/v1/products",
+          {
+            headers: {
+              "x-api-key": "OhnnILQdYFQjaePagghzG7EKnIcSt7qjgYD3Qa0bbG0=",
+              "x-secret":
+                "b7e49cfa3db4dfe8ebae7cd052996011713f186e5fa51bb706c574bf08aa922a3b20015ffb594c68281b72df3e3d9f7f25651283042e72da2cdcead1eb84b185.f71dddc43729ad31",
+            },
+          }
+        );
+
+
+
+        const productsData = response.data.map((product: any) => ({
+          id: product._id,
+          name: product.name,
+          price: product.price,
+          imageUrl: product.images[0]?.url || "", // Si hay varias imágenes, selecciona la primera
+          short_description: product.short_description || "",
         }));
+
         setProducts(productsData);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -40,49 +54,34 @@ const FormLayout = () => {
     fetchProducts();
   }, []);
 
-  const logout = () => {
-    if (!localStorage.getItem('afiliado') || localStorage.getItem('afiliado') === '') {
-      window.location.href = '/auth/signin';
-    }
-  };
-
-  useEffect(() => {
-    logout();
-  }, []);
-
   const generateProductUrl = (productId: string) => {
-    const baseUrl = 'http://stockyproducto.stocky.com.co';
+    const baseUrl = "http://stockyproducto.stocky.com.co";
     const url = new URL(baseUrl);
-    url.searchParams.append('PRO', productId);
-    url.searchParams.append('AFL', localStorage.getItem('afiliado') || '');
+    url.searchParams.append("PRO", productId);
+    url.searchParams.append("AFL", localStorage.getItem("afiliado") || "");
 
     return url.toString();
   };
 
+  useEffect(() => {
+    const logout = () => {
+      if (!localStorage.getItem("afiliado") || localStorage.getItem("afiliado") === "") {
+        window.location.href = "/auth/signin";
+      }
+    };
+
+    logout();
+  }, []);
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
       {products.map((product) => (
-        <div key={product.url} className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <img
-            src={product.imagen}
-            alt={product.nombre}
-            className="w-full h-48 object-contain"
-          />
+        <div key={product.id} className="bg-white shadow-lg rounded-lg overflow-hidden">
+          <img src={product.imageUrl} alt={product.name} className="w-full h-100 object-cover" />
           <div className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {product.nombre}
-            </h3>
-            <p className="text-gray-500 mb-4">
-              Precio: ${product.precio}
-            </p>
-            <p className="text-gray-500 mb-4">
-              Comisión: ${product.comision}
-            </p>
-            <div className="flex items-center mb-4">
-              <p className="text-gray-900 font-bold text-xl">
-                ${product.precio}
-              </p>
-            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
+            <p className="text-gray-500 mb-4">Precio: ${product.price}</p>
+            <p className="text-gray-500 mb-4">Descripción: ${product.short_description}</p>
 
             <div className="flex items-center space-x-4">
               <a
@@ -91,29 +90,19 @@ const FormLayout = () => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {product.url}
+                Pagina de venta
               </a>
               <button
                 onClick={() => copyToClipboard(generateProductUrl(product.id))}
-                className="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100">
-                <svg
-                  className="fill-current"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg">
-                  <path d="M15 0H5C3.34315 0 2 1.34315 2 3V19C2 20.6569 3.34315 22 5 22H15C16.6569 22 18 20.6569 18 19V3C18 1.34315 16.6569 0 15 0ZM16 19C16 19.5304 15.7893 20.0391 15.4142 20.4142C15.0391 20.7893 14.5304 21 14 21H6C5.46957 21 4.96086 20.7893 4.58579 20.4142C4.21071 20.0391 4 19.5304 4 19V5C4 4.46957 4.21071 3.96086 4.58579 3.58579C4.96086 3.21071 5.46957 3 6 3H14C14.5304 3 15.0391 3.21071 15.4142 3.58579C15.7893 3.96086 16 4.46957 16 5V19ZM6 6H14V18H6V6ZM12 8H8V10H12V8ZM12 12H8V14H12V12ZM12 16H8V18H12V16Z" fill="currentColor" />
-                </svg>
+                className="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+              >
+                Copiar Enlace
               </button>
             </div>
             <button
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-2 px-4 rounded-lg mt-5">
-              <a
-                href={generateProductUrl(product.id)}
-                className="hover:underline text-white"
-                target="_blank"
-                rel="noopener noreferrer">
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-2 px-4 rounded-lg mt-5"
+            >
+              <a href={generateProductUrl(product.id)} className="hover:underline text-white" target="_blank" rel="noopener noreferrer">
                 Ver Producto
               </a>
             </button>
