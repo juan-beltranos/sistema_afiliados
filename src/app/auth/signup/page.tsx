@@ -3,30 +3,49 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/app/lib/firebase";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, Timestamp, setDoc, doc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 const SignUp: React.FC = () => {
-  // Estados para los campos del formulario
-  const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const [formData, setFormData] = useState({ nombre: "", email: "", telefono: "" });
+  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const fields: Array<keyof typeof formData> = ["nombre", "email", "telefono"];
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const validateForm = () => {
+    const { nombre, email, telefono } = formData;
+    if (!nombre || !email || !telefono) {
+      return "Todos los campos son obligatorios";
+    }
+    return null;
+  };
+
+  const getAffiliateRef = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("AFL") || "";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validaciones
-    if (!nombre || !email || !telefono) {
-      setError("Todos los campos son obligatorios");
+    const errorMsg = validateForm();
+    if (errorMsg) {
+      setError(errorMsg);
       return;
     }
 
-    // Leer el parámetro 'AFL' de la URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const afiliadoReferente = urlParams.get('AFL') || '';
+    const afiliadoReferente = getAffiliateRef();
 
     try {
+      const { nombre, email, telefono } = formData;
+
       // 1. Guardar en la colección "afiliados"
       const docRef = await addDoc(collection(db, "afiliados"), {
         nombre,
@@ -36,23 +55,38 @@ const SignUp: React.FC = () => {
         comisionAcumulada: 0,
         comisionSubafiliados: 0,
         ventasGeneradas: 0,
-        subAfiliados: [],
         estado: true,
         fechaRegistro: Timestamp.now(),
       });
 
-      setNombre("");
-      setEmail("");
-      setTelefono("");
-      setSuccess(true);
+      // 2. Guardar en la colección de "subAfiliados" si existe un afiliado referente
+      if (afiliadoReferente) {
+        const subafiliadoRef = doc(collection(db, "afiliados", afiliadoReferente, "subAfiliados"), docRef.id);
+        await setDoc(subafiliadoRef, {
+          id: docRef.id,
+          nombre,
+          email,
+          telefono,
+          afiliadoReferente,
+          comisionAcumulada: 0,
+          comisionSubafiliados: 0,
+          ventasGeneradas: 0,
+          estado: true,
+          fechaRegistro: Timestamp.now(),
+        });
+      }
 
-      localStorage.setItem('afiliado', docRef.id);
-      window.location.href = `/dashboard/ebooks/?afiliado=${docRef.id}`;
+      // Restablecer los campos y redirigir
+      setFormData({ nombre: "", email: "", telefono: "" });
+      setSuccess(true);
+      localStorage.setItem("afiliado", docRef.id);
+      router.push(`/dashboard/ebooks/?afiliado=${docRef.id}`);
     } catch (error) {
       console.error("Error al registrar:", error);
       setError("Hubo un error al registrar, intenta de nuevo.");
     }
   };
+
 
   return (
     <div className="flex flex-wrap items-center h-svh">
@@ -80,50 +114,17 @@ const SignUp: React.FC = () => {
           {success && <p className="text-green-500 text-center">¡Registro exitoso!</p>}
 
           <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="mb-2.5 block font-medium text-black dark:text-white">
-                Nombre
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Ingresa tu nombre"
-                  className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="mb-2.5 block font-medium text-black dark:text-white">
-                Correo electrónico
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Ingresa tu correo electrónico"
-                  className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="mb-2.5 block font-medium text-black dark:text-white">
-                Teléfono
-              </label>
-              <div className="relative">
-                <input
-                  type="tel"
-                  value={telefono}
-                  onChange={(e) => setTelefono(e.target.value)}
-                  placeholder="Ingresa tu teléfono"
-                  className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-                />
-              </div>
-            </div>
+            {fields.map((field) => (
+              <input
+                key={field}
+                type={field === "email" ? "email" : "text"}
+                name={field}
+                value={formData[field]}
+                onChange={handleInputChange}
+                placeholder={`Ingresa tu ${field}`}
+                className="w-full rounded-lg mb-5 border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              />
+            ))}
 
             <div className="mb-5">
               <input
@@ -145,7 +146,6 @@ const SignUp: React.FC = () => {
         </div>
       </div>
     </div>
-
   );
 };
 

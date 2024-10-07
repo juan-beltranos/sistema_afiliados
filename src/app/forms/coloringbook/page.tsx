@@ -16,7 +16,7 @@ interface Afiliado {
 }
 
 interface Venta {
-  comisionAfiliadoPadre: number; // Asegurarse de usar el nombre correcto
+  comisionReferente?: number; // Asegurarse de usar el nombre correcto
 }
 
 const FormLayout: React.FC = () => {
@@ -54,9 +54,9 @@ const FormLayout: React.FC = () => {
         const ventasRef = collection(db, 'afiliados', referido.id, 'ventas');
         const ventasSnapshot = await getDocs(ventasRef);
 
-        const ventasList: Venta[] = ventasSnapshot.docs.map((ventaDoc) => ({
-          comisionAfiliadoPadre: ventaDoc.data().comisionAfiliadoPadre || 0, // Asegurarse de que la propiedad exista
-        }));
+        const ventasList: Venta[] = ventasSnapshot.docs.map((ventaDoc) => {
+          return { comisionReferente: ventaDoc.data().comisionReferente || 0 };
+        });
 
         ventasByReferido[referido.id] = ventasList;
       }
@@ -80,7 +80,7 @@ const FormLayout: React.FC = () => {
   // Función para calcular la suma de comisiones de cada referido
   const getTotalComision = (referidoId: string): number => {
     const ventasReferido = ventas[referidoId] || [];
-    return ventasReferido.reduce((total, venta) => total + (venta.comisionAfiliadoPadre || 0), 0);
+    return ventasReferido.reduce((total, venta) => total + (venta.comisionReferente || 0), 0);
   };
 
   return (
