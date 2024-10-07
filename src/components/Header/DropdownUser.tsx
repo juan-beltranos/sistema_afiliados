@@ -26,13 +26,12 @@ const DropdownUser = () => {
 
         // Obtén la referencia al documento con el ID del afiliado
         const afiliadoRef = doc(db, 'afiliados', afiliadoId);
-
-        // Ejecuta la consulta para obtener el documento
         const afiliadoSnapshot = await getDoc(afiliadoRef);
 
         // Verifica si el documento existe
         if (afiliadoSnapshot.exists()) {
           const afiliadoData = afiliadoSnapshot.data() as Afiliado;
+          if (afiliadoData.nombre === 'Admin') { localStorage.setItem('admin', afiliadoData.nombre) }
           setAfiliado({
             nombre: afiliadoData.nombre || '',
             telefono: afiliadoData.telefono || '',
@@ -46,6 +45,7 @@ const DropdownUser = () => {
     };
 
     fetchAfiliado();
+
   }, []);
 
   const cerrarSesion = () => {

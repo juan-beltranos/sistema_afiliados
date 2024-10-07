@@ -16,7 +16,7 @@ interface Afiliado {
 }
 
 interface Venta {
-  comisionReferente?: number; // Asegurarse de usar el nombre correcto
+  comisionReferente?: number;
 }
 
 const FormLayout: React.FC = () => {
@@ -25,17 +25,27 @@ const FormLayout: React.FC = () => {
   const [ventas, setVentas] = useState<{ [afiliadoId: string]: Venta[] }>({});
 
   const fetchReferidos = async () => {
+    setLoading(true);
     try {
-      const afiliadoID = localStorage.getItem('afiliado');
-      if (!afiliadoID) {
-        console.error('No afiliado ID found in localStorage');
+      const afiliadoID = localStorage.getItem("afiliado");
+      const isAdmin = localStorage.getItem("admin");
+
+      let querySnapshot;
+      if (isAdmin) {
+        // Si es admin, obtener todos los afiliados
+        const afiliadosRef = collection(db, "afiliados");
+        querySnapshot = await getDocs(afiliadosRef);
+      } else if (afiliadoID) {
+        // Si no es admin, obtener solo los referidos del afiliado
+        const afiliadosRef = collection(db, "afiliados");
+        const q = query(afiliadosRef, where("afiliadoReferente", "==", afiliadoID));
+        querySnapshot = await getDocs(q);
+      } else {
+        console.error("No se encontró el ID del afiliado en localStorage");
         return;
       }
 
-      const afiliadosRef = collection(db, 'afiliados');
-      const q = query(afiliadosRef, where('afiliadoReferente', '==', afiliadoID));
-      const querySnapshot = await getDocs(q);
-
+      // Mapeo de datos de afiliados
       const referidosList: Afiliado[] = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         nombre: doc.data().nombre,
@@ -46,23 +56,24 @@ const FormLayout: React.FC = () => {
 
       setReferidos(referidosList);
 
+      // Obtener ventas por referido
       const ventasByReferido: { [afiliadoId: string]: Venta[] } = {};
       for (const referido of referidosList) {
-        const ventasRef = collection(db, 'afiliados', referido.id, 'ventas');
+        const ventasRef = collection(db, "afiliados", referido.id, "ventas");
         const ventasSnapshot = await getDocs(ventasRef);
 
-        const ventasList: Venta[] = ventasSnapshot.docs.map((ventaDoc) => {
-          return { comisionReferente: ventaDoc.data().comisionReferente || 0 };
-        });
+        const ventasList: Venta[] = ventasSnapshot.docs.map((ventaDoc) => ({
+          comisionReferente: ventaDoc.data().comisionReferente || 0,
+        }));
 
         ventasByReferido[referido.id] = ventasList;
       }
 
       setVentas(ventasByReferido);
     } catch (error) {
-      console.error('Error al obtener los referidos y ventas:', error);
+      console.error("Error al obtener los referidos y ventas:", error);
     } finally {
-      setLoading(false);
+      setLoading(false); // Establecer el estado de carga en falso
     }
   };
 

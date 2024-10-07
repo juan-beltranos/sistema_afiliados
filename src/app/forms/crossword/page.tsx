@@ -36,23 +36,34 @@ const FormLayout: React.FC = () => {
 
   useEffect(() => {
     const fetchVentas = async () => {
+      setLoading(true);
       try {
+        const isAdmin = localStorage.getItem("admin");
         const idAfiliado = localStorage.getItem("afiliado");
-        if (!idAfiliado) {
+
+        if (isAdmin) {
+          const ventasRef = collection(db, "ventas"); 
+          const ventasSnapshot = await getDocs(ventasRef);
+          const ventasList = ventasSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as Venta[];
+
+          setVentas(ventasList);
+        } else if (idAfiliado) {
+          // Si no es admin, consulta la subcolección de ventas del afiliado
+          const ventasRef = collection(db, "afiliados", idAfiliado, "ventas");
+          const ventasSnapshot = await getDocs(ventasRef);
+
+          const ventasList = ventasSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as Venta[];
+
+          setVentas(ventasList);
+        } else {
           console.error("No se encontró el ID del afiliado en localStorage");
-          setLoading(false);
-          return;
         }
-
-        const ventasRef = collection(db, "afiliados", idAfiliado, "ventas");
-        const ventasSnapshot = await getDocs(ventasRef);
-
-        const ventasList = ventasSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Venta[];
-
-        setVentas(ventasList);
       } catch (error) {
         console.error("Error al obtener las ventas:", error);
       } finally {
