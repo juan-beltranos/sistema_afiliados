@@ -32,12 +32,10 @@ const FormLayout: React.FC = () => {
         return;
       }
 
-      // 1. Consultar Firebase para obtener todos los referidos cuyo afiliadoReferente sea igual al afiliadoID
       const afiliadosRef = collection(db, 'afiliados');
       const q = query(afiliadosRef, where('afiliadoReferente', '==', afiliadoID));
       const querySnapshot = await getDocs(q);
 
-      // 2. Obtener los datos de los referidos y guardarlos en el estado
       const referidosList: Afiliado[] = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         nombre: doc.data().nombre,
@@ -48,7 +46,6 @@ const FormLayout: React.FC = () => {
 
       setReferidos(referidosList);
 
-      // 3. Obtener la subcolección 'ventas' para cada referido
       const ventasByReferido: { [afiliadoId: string]: Venta[] } = {};
       for (const referido of referidosList) {
         const ventasRef = collection(db, 'afiliados', referido.id, 'ventas');
@@ -77,7 +74,13 @@ const FormLayout: React.FC = () => {
     return <div>Cargando...</div>;
   }
 
-  // Función para calcular la suma de comisiones de cada referido
+  const handleCopyLink = () => {
+    const afiliadoID = localStorage.getItem('afiliado');
+    const link = `https://stocky.com.co/auth/signup?AFL=${afiliadoID}`;
+    navigator.clipboard.writeText(link);
+    alert('Enlace de referidos copiado al portapapeles');
+  };
+
   const getTotalComision = (referidoId: string): number => {
     const ventasReferido = ventas[referidoId] || [];
     return ventasReferido.reduce((total, venta) => total + (venta.comisionReferente || 0), 0);
@@ -85,10 +88,30 @@ const FormLayout: React.FC = () => {
 
   return (
     <div className="grid grid-cols-1 gap-9 p-4">
-      <h2>
-        Link para tus referidos: stockyafiliados.stocky.com.co/auth/signup?AFL=
-        {localStorage.getItem('afiliado')}
-      </h2>
+      <div className="flex items-center gap-4">
+        <h2>
+          Link para tus referidos: https://stocky.com.co/auth/signup?AFL=
+          {localStorage.getItem('afiliado')}
+        </h2>
+        <button
+          onClick={handleCopyLink}
+          className="p-2 text-white bg-blue-500 rounded hover:bg-blue-600 flex items-center"
+        >
+          <svg
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+            height="1em"
+            width="1em"
+          >
+            <path d="M11 9 H20 A2 2 0 0 1 22 11 V20 A2 2 0 0 1 20 22 H11 A2 2 0 0 1 9 20 V11 A2 2 0 0 1 11 9 z" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+          </svg>
+        </button>
+      </div>
 
       <div className="flex flex-col gap-9">
         <div className="rounded-lg border border-stroke bg-white shadow-lg dark:border-strokedark dark:bg-boxdark">
@@ -114,7 +137,7 @@ const FormLayout: React.FC = () => {
                         {new Date(referido.fechaRegistro.seconds * 1000).toLocaleDateString()}
                       </td>
                       <td className="py-2 px-4">
-                        {getTotalComision(referido.id)} {/* Muestra la suma de comisiones */}
+                        {getTotalComision(referido.id)}
                       </td>
                     </tr>
                   ))
